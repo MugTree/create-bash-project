@@ -31,8 +31,6 @@ else
     scriptname=${1}
 fi
 
-dt=$(date '+%d/%m/%Y %H:%M:%S')
-description=""
 
 while :; do
    case $1 in
@@ -64,13 +62,13 @@ else
 fi
 
 #Home directory for bash projects
-srcdir=~/Source/bash-scripts/
+srcdir=~/Source/bash-scripts
 echo "Move to script directory..."
 cd $srcdir 
 
 #User bin path, data logging path etc
 installpath=~/bin
-datapath=~/Documents/Data/
+datapath=~/Documents/Data
 
 echo "Creating required files and folders..."
 mkdir $scriptname; cd $scriptname
@@ -86,9 +84,9 @@ EOF
 # Create the json data
 jsondata=$(jq --null-input \
  --arg scriptname $scriptname \
- --arg installpath "$installpath" \
- --arg datapath "$datapath" \
-  '{"scriptname": $scriptname, "installpath" : $installpath, "datapath" : "$datapath"}')
+ --arg installpath $installpath \
+ --arg datapath $datapath \
+  '{"scriptname": $scriptname, "installpath" : $installpath, "datapath" : $datapath}')
 
 # Write to the config file
 echo $jsondata > config.json
@@ -114,10 +112,19 @@ chmod +x install
 # Create a git repo
 echo "Git init"
 git init
+git add .
+
+dt=$(date '+%d/%m/%Y %H:%M:%S')
+git commit -m "Initial commit - ${scriptname} project created on ${dt}"
 
 echo "Installing script..."
 cp $scriptname $installpath/$scriptname
 chmod +x $installpath/$scriptname
+
+# Installing log files and datastore
+cd $datapath
+mkdir $scriptname; cd $scriptname
+touch $scriptname-data.json $scriptname.log
 
 echo "Open new terminal in directory"
 cd $srcdir/$scriptname && gnome-terminal
