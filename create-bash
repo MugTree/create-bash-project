@@ -1,14 +1,72 @@
 #!/bin/bash
 
+#Check to see if project name has been set
+if [ -z "${1}" ]; then 
+    die 'Error: please enter a project name'
+else
+    scriptname=${1}
+fi
+
+dt=$(date '+%d/%m/%Y %H:%M:%S')
+ 
+function show_help(){
+    cat << EOF
+    Usage: ${0##*//} Stuff here
+EOF
+}
+
+function die() {
+ printf '%s\n' "$1" >&2
+ exit 1
+ }
+ 
+while :; do
+   case $1 in
+       -h|-\?|--help)
+           show_help
+           exit
+           ;;
+       --) # designates end of of options indicator 
+           shift
+           break
+           ;;
+       -?*)
+           printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+           ;;
+       *) # default case break out of loop
+           break
+       esac
+
+       shift
+done
+
+# Check for dependencies
+if ! command -v /usr/bin/jq &> /dev/null
+then
+    echo "`/usr/bin/jq` JSON parsing library not found. \
+     Please install jq"
+    exit
+else
+    echo "Library code in place..."
+fi
+
+#Check script doesnt already exist
+if ! command -v ~/bin/$scriptname &> /dev/null
+then
+    echo " Already exists..."
+    exit
+else
+    echo "Scriptname is fine..."
+fi
+
 #Home directory for bash projects
 srcdir=~/Source/bash-scripts/
 echo "Move to script directory..."
 cd $srcdir 
 
-#User bin path
+#User bin path, data logging path etc
 installpath=~/bin
-
-scriptname=${1}
+datapath=~/Documents/Data/
 
 echo "Creating required files and folders..."
 mkdir $scriptname; cd $scriptname
@@ -25,7 +83,8 @@ EOF
 jsondata=$(jq --null-input \
  --arg scriptname $scriptname \
  --arg installpath "$installpath" \
- '{"scriptname": $scriptname, "installpath" : $installpath}')
+ --arg datapath "$datapath" 
+ '{"scriptname": $scriptname, "installpath" : $installpath, "datapath" : "$datapath"}')
 
 # Write to the config file
 echo $jsondata > config.json

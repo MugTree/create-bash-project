@@ -1,0 +1,23 @@
+# READ ME
+
+## Simple script to automate the creation of bash projects
+
+- Executable lives at `~/bin/create-bash-project`
+
+## Basic call would be
+
+`create-bash-project projectname`
+
+Gives you a basic folder structure
+
+- projectname
+
+-- projectname -> this is the main script
+-- installer -> run this to copy the main script to `~/bin` and make it executable
+-- config.json -> values used in the project
+
+
+1. Takes a project name
+
+## !Required
+Need to add a directory to store logging and data created from the bash scripts that this creates.
