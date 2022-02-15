@@ -1,5 +1,29 @@
 #!/bin/bash
 
+function die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+ }
+ 
+function show_help(){
+    cat << EOF
+    Usage: ${0##*/} [-h --help] [PROJECT NAME]
+
+    Simple script to build command line projects
+    
+EOF
+}
+
+# Check for dependencies
+if ! command -v /usr/bin/jq &> /dev/null
+then
+    echo "`/usr/bin/jq` JSON parsing library not found. \
+     Please install jq"
+    exit
+else
+    echo "Library code in place..."
+fi
+
 #Check to see if project name has been set
 if [ -z "${1}" ]; then 
     die 'Error: please enter a project name'
@@ -8,18 +32,8 @@ else
 fi
 
 dt=$(date '+%d/%m/%Y %H:%M:%S')
- 
-function show_help(){
-    cat << EOF
-    Usage: ${0##*//} Stuff here
-EOF
-}
+description=""
 
-function die() {
- printf '%s\n' "$1" >&2
- exit 1
- }
- 
 while :; do
    case $1 in
        -h|-\?|--help)
@@ -35,28 +49,18 @@ while :; do
            ;;
        *) # default case break out of loop
            break
-       esac
+    esac
 
-       shift
+    shift
 done
 
-# Check for dependencies
-if ! command -v /usr/bin/jq &> /dev/null
-then
-    echo "`/usr/bin/jq` JSON parsing library not found. \
-     Please install jq"
-    exit
-else
-    echo "Library code in place..."
-fi
-
-#Check script doesnt already exist
+# Check script doesnt already exist
 if ! command -v ~/bin/$scriptname &> /dev/null
 then
-    echo " Already exists..."
-    exit
-else
     echo "Scriptname is fine..."
+else
+    echo "${scriptname} already exists..."
+    exit
 fi
 
 #Home directory for bash projects
@@ -83,8 +87,8 @@ EOF
 jsondata=$(jq --null-input \
  --arg scriptname $scriptname \
  --arg installpath "$installpath" \
- --arg datapath "$datapath" 
- '{"scriptname": $scriptname, "installpath" : $installpath, "datapath" : "$datapath"}')
+ --arg datapath "$datapath" \
+  '{"scriptname": $scriptname, "installpath" : $installpath, "datapath" : "$datapath"}')
 
 # Write to the config file
 echo $jsondata > config.json
