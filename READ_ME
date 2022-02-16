@@ -10,12 +10,8 @@
 
 Gives you a basic folder structure
 
-- projectname
--- projectname -> this is the main script
--- installer -> run this to copy the main script to `~/bin` and make it executable
--- config.json -> values used in the project
-
-## !Required
-
-1. Need to add a directory to store logging and data created from the bash scripts that this creates.
-2. Rename to `create-bash-project`
+projectname/
+├── projectname - this is the main script \ bash file
+├── installer - run this to copy the main script to `~/bin` and make it executable
+├── config.json - values used in the project - data logging etc
+├── READ_ME - Blank readme

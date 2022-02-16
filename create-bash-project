@@ -1,10 +1,22 @@
 #!/bin/bash
 
+# script vars
+codesource=$(jq -r '.codesource' create-bash-project-config.json)
+installdirectory=$(jq -r '.installdirectory' create-bash-project-config.json)
+datadirectory=$(jq -r '.datadirectory' create-bash-project-config.json)
+
+echo $codesource
+echo $installdirectory
+echo $datadirectory
+
+# exit
+
 function die() {
     printf '%s\n' "$1" >&2
     exit 1
  }
  
+
 function show_help(){
     cat << EOF
     Usage: ${0##*/} [-h --help] [PROJECT NAME]
@@ -14,6 +26,7 @@ function show_help(){
 EOF
 }
 
+
 # Check for dependencies
 if ! command -v /usr/bin/jq &> /dev/null
 then
@@ -22,13 +35,6 @@ then
     exit
 else
     echo "Library code in place..."
-fi
-
-#Check to see if project name has been set
-if [ -z "${1}" ]; then 
-    die 'Error: please enter a project name'
-else
-    scriptname=${1}
 fi
 
 
@@ -52,80 +58,102 @@ while :; do
     shift
 done
 
-# Check script doesnt already exist
+
+# Has project name has been set?
+if [ -z "${1}" ]; then 
+    die 'Error: please enter a project name'
+else
+    scriptname=${1}
+    echo $scriptname
+fi
+
+
+# Does script already exist?
 if ! command -v ~/bin/$scriptname &> /dev/null
 then
     echo "Scriptname is fine..."
 else
-    echo "${scriptname} already exists..."
-    exit
+    die 'Error: ${scriptname} already exists...'
 fi
 
-#Home directory for bash projects
-srcdir=~/Source/bash-scripts
-echo "Move to script directory..."
-cd $srcdir 
 
-#User bin path, data logging path etc
-installpath=~/bin
-datapath=~/Documents/Data
+echo "Opening ${codesource}..."
+cd $codesource 
 
 echo "Creating required files and folders..."
 mkdir $scriptname; cd $scriptname
 
-touch config.json .gitignore
-
-# Create the main script
-cat <<'EOF' >>$scriptname
+# Create empty main script
+echo "Creating ${scriptname}"
+cat <<EOF >$scriptname
 #!/bin/bash
-echo $PWD
+
+echo "Nothing here yet..."
+
 EOF
+
+echo "Creating config files..."
+touch $scriptname-config.json .gitignore
+
+datecreated=$(date '+%d/%m/%Y %H:%M:%S')
 
 # Create the json data
 jsondata=$(jq --null-input \
- --arg scriptname $scriptname \
- --arg installpath $installpath \
- --arg datapath $datapath \
-  '{"scriptname": $scriptname, "installpath" : $installpath, "datapath" : $datapath}')
+ --arg scriptname "$scriptname" \
+ --arg installdirectory "$installdirectory" \
+ --arg datadirectory "$datadirectory" \
+ --arg datecreated "$datecreated" \
+  '{"scriptname" : $scriptname, "installdirectory" : $installdirectory, "datadirectory" : $datadirectory, "datecreated" : $datecreated}')
 
 # Write to the config file
-echo $jsondata > config.json
- 
+echo "Writing config files"
+echo $jsondata > $scriptname-config.json
+
+
 # Create the install script
-cat <<'EOF' >>install
+cat <<'EOF' >install
 #!/bin/bash
  
-scriptname=$(echo $(jq -r '.scriptname' config.json))
-installpath=$(echo $(jq -r '.installpath' config.json))
-echo  $installpath
+scriptname=$(echo $(jq -r '.scriptname' $scriptname-config.json))
+installdirectory=$(echo $(jq -r '.installdirectory' $scriptname-config.json))
+echo  $installdirectory
  
-cp $scriptname $installpath/$scriptname
-echo "Copied ${scriptname} to ${installpath}/${scriptname}"
+cp $scriptname $installdirectory/$scriptname
+echo "Copied ${scriptname} to ${installdirectory}/${scriptname}"
  
-chmod +x $installpath/$scriptname
-echo "chmod +x ${installpath}/${scriptname}"            
+chmod +x $installdirectory/$scriptname
+echo "chmod +x ${installdirectory}/${scriptname}"            
 EOF
+
 
 # Make the installer executable
 chmod +x install
+
 
 # Create a git repo
 echo "Git init"
 git init
 git add .
 
-dt=$(date '+%d/%m/%Y %H:%M:%S')
-git commit -m "Initial commit - ${scriptname} project created on ${dt}"
+git commit -m "Initial commit - ${scriptname} project created on ${datecreated}"
+
 
 echo "Installing script..."
-cp $scriptname $installpath/$scriptname
-chmod +x $installpath/$scriptname
+
+cp $scriptname $installdirectory/$scriptname
+chmod +x $installdirectory/$scriptname
+
 
 # Installing log files and datastore
-cd $datapath
+cd $datadirectory
 mkdir $scriptname; cd $scriptname
 touch $scriptname-data.json $scriptname.log
 
-echo "Open new terminal in directory"
-cd $srcdir/$scriptname && gnome-terminal
 
+# Is vscode installed 
+if command -v /usr/bin/code &> /dev/null
+then
+    code $codesource/$scriptname
+else
+    cd $codesource/$scriptname && gnome-terminal
+fi
