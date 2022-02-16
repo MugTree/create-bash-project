@@ -111,17 +111,13 @@ echo $jsondata > $scriptname-config.json
 
 
 # Create the install script
-cat <<'EOF' >install
+cat <<EOF >install
 #!/bin/bash
  
-scriptname=$(echo $(jq -r '.scriptname' $scriptname-config.json))
-installdirectory=$(echo $(jq -r '.installdirectory' $scriptname-config.json))
-echo  $installdirectory
- 
-cp $scriptname $installdirectory/$scriptname
+cp ${scriptname} ${installdirectory}/${scriptname}
 echo "Copied ${scriptname} to ${installdirectory}/${scriptname}"
  
-chmod +x $installdirectory/$scriptname
+chmod +x ${installdirectory}/${scriptname}
 echo "chmod +x ${installdirectory}/${scriptname}"            
 EOF
 
