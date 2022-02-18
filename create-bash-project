@@ -3,11 +3,10 @@
 # script vars
 codesource=$(jq -r '.codesource' create-bash-project-config.json)
 installdirectory=$(jq -r '.installdirectory' create-bash-project-config.json)
-datadirectory=$(jq -r '.datadirectory' create-bash-project-config.json)
+basedatadirectory=$(jq -r '.basedatadirectory' create-bash-project-config.json)
 
 echo $codesource
 echo $installdirectory
-echo $datadirectory
 
 # exit
 
@@ -97,6 +96,9 @@ touch $scriptname-config.json .gitignore
 
 datecreated=$(date '+%d/%m/%Y %H:%M:%S')
 
+#create the full data directory path
+datadirectory="${basedatadirectory}/${scriptname}"
+
 # Create the json data
 jsondata=$(jq --null-input \
  --arg scriptname "$scriptname" \
@@ -141,10 +143,9 @@ chmod +x $installdirectory/$scriptname
 
 
 # Installing log files and datastore
-cd $datadirectory
-mkdir $scriptname; cd $scriptname
+# cd $datadirectory
+mkdir $datadirectory; cd $datadirectory
 touch $scriptname-data.json $scriptname.log
-
 
 # Is vscode installed 
 if command -v /usr/bin/code &> /dev/null
