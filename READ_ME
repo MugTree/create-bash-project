@@ -2,6 +2,8 @@
 
 ## Simple script to automate the creation of bash projects
 
+! Check the `create-bash-project-config.json` to make sure all your paths exist !
+
 ## Basic call would be
 
 `create-bash-project projectname`
