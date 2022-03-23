@@ -2,8 +2,6 @@
 
 ## Simple script to automate the creation of bash projects
 
-- Executable lives at `~/bin/create-bash-project`
-
 ## Basic call would be
 
 `create-bash-project projectname`
